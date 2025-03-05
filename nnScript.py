@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
-from math import sqrt
+from math import sqrt, e
 
 
 def initializeWeights(n_in, n_out):
@@ -28,34 +28,10 @@ def sigmoid(z):
     """# Notice that z can be a scalar, a vector or a matrix
     # return the sigmoid of input z"""
     
-    return  # your code here
+    return  1/(1 + e**(-z))
 
 
 def preprocess():
-    """ Input:
-     Although this function doesn't have any input, you are required to load
-     the MNIST data set from file 'mnist_all.mat'.
-
-     Output:
-     train_data: matrix of training set. Each row of train_data contains 
-       feature vector of image
-     train_label: vector of label corresponding to each image in the training
-       set
-     validation_data: matrix of training set. Each row of validation_data 
-       contains feature vector of image
-     validation_label: vector of label corresponding to each image in the 
-       training set
-     test_data: matrix of training set. Each row of test_data contains 
-       feature vector of image
-     test_label: vector of label corresponding to each image in the testing
-       set
-
-     Some suggestions for preprocessing step:
-     - feature selection"""
-
-    mat = loadmat('mnist_all.mat')  # loads the MAT object as a Dictionary
-
-    def preprocess():
     """ 
     Input:
      - Load the MNIST dataset from 'mnist_all.mat' file.
