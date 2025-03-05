@@ -55,10 +55,46 @@ def preprocess():
 
     mat = loadmat('mnist_all.mat')  # loads the MAT object as a Dictionary
 
-    # Split the training sets into two sets of 50000 randomly sampled training examples and 10000 validation examples. 
-    # Your code here.
-    
+    def preprocess():
+    """ 
+    Input:
+     - Load the MNIST dataset from 'mnist_all.mat' file.
 
+    Output:
+     - train_data: Matrix of training set. Each row contains the feature vector of an image.
+     - train_label: Vector of labels corresponding to each image in the training set.
+     - validation_data: Matrix of validation set.
+     - validation_label: Vector of labels corresponding to validation images.
+     - test_data: Matrix of test set.
+     - test_label: Vector of labels corresponding to test images.
+    """
+
+    mat = loadmat('mnist_all.mat')  
+
+    total_train_data = np.empty((0, 784))  
+    total_train_vector = np.array([])
+
+    total_test_data = np.empty((0, 784))  
+    total_test_vector = np.array([])
+
+    for key in mat.keys():
+        if key[0:5] == "train":
+            total_train_data = np.concatenate((total_train_data, mat[key]))
+            total_train_vector = np.append(total_train_vector, np.full(mat[key].shape[0], int(key[5])))
+        elif key[0:4] == "test":
+            total_test_data = np.concatenate((total_test_data, mat[key]))
+            total_test_vector = np.append(total_test_vector, np.full(mat[key].shape[0], int(key[4])))
+
+    randomized_data_index = np.random.permutation(len(total_train_data))
+    train_data = total_train_data[randomized_data_index[0:50000]]
+    train_label = total_train_vector[randomized_data_index[0:50000]]
+    validation_data = total_train_data[randomized_data_index[50000:]]
+    validation_label = total_train_vector[randomized_data_index[50000:]]
+
+    randomized_data_index = np.random.permutation(len(total_test_data))
+    test_data = total_test_data[randomized_data_index]
+    test_label = total_test_vector[randomized_data_index]
+    
     # Feature selection
     # Your code here.
 
