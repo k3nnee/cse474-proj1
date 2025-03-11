@@ -32,7 +32,7 @@ def sigmoid(z):
 
 
 def preprocess():
-    """ 
+    """
     Input:
      - Load the MNIST dataset from 'mnist_all.mat' file.
 
@@ -45,13 +45,15 @@ def preprocess():
      - test_label: Vector of labels corresponding to test images.
     """
 
-    mat = loadmat('mnist_all.mat')  
+    mat = loadmat('mnist_all.mat')
 
-    total_train_data = np.empty((0, 784))  
+    total_train_data = np.empty((0, 784))
     total_train_vector = np.array([])
 
-    total_test_data = np.empty((0, 784))  
+    total_test_data = np.empty((0, 784))
     total_test_vector = np.array([])
+
+    # Data loading
 
     for key in mat.keys():
         if key[0:5] == "train":
@@ -60,6 +62,16 @@ def preprocess():
         elif key[0:4] == "test":
             total_test_data = np.concatenate((total_test_data, mat[key]))
             total_test_vector = np.append(total_test_vector, np.full(mat[key].shape[0], int(key[4])))
+
+    # Feature selection
+
+    combined_data = np.concatenate((total_train_data, total_test_data), axis=0)
+    variance = np.var(combined_data, axis=0)
+
+    total_train_data = total_train_data[:, variance > .01]
+    total_test_data = total_test_data[:, variance > .01]
+
+    # Data splitting 
 
     randomized_data_index = np.random.permutation(len(total_train_data))
     train_data = total_train_data[randomized_data_index[0:50000]]
@@ -70,11 +82,6 @@ def preprocess():
     randomized_data_index = np.random.permutation(len(total_test_data))
     test_data = total_test_data[randomized_data_index]
     test_label = total_test_vector[randomized_data_index]
-    
-    # Feature selection
-    # Your code here.
-
-    print('preprocess done')
 
     return train_data, train_label, validation_data, validation_label, test_data, test_label
 
