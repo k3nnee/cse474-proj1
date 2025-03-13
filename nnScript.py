@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
-from math import sqrt, e
-
+from math import sqrt
 
 def initializeWeights(n_in, n_out):
     """
@@ -12,8 +11,8 @@ def initializeWeights(n_in, n_out):
     # Input:
     # n_in: number of nodes of the input layer
     # n_out: number of nodes of the output layer
-       
-    # Output: 
+
+    # Output:
     # W: matrix of random initial weights with size (n_out x (n_in + 1))"""
     '''
         n_out rows
@@ -27,8 +26,8 @@ def initializeWeights(n_in, n_out):
 def sigmoid(z):
     """# Notice that z can be a scalar, a vector or a matrix
     # return the sigmoid of input z"""
-    
-    return  1/(1 + e**(-z))
+
+    return 1 / (1 + np.exp(-z))
 
 
 def preprocess():
@@ -87,9 +86,9 @@ def preprocess():
 
 
 def nnObjFunction(params, *args):
-    """% nnObjFunction computes the value of objective function (negative log 
-    %   likelihood error function with regularization) given the parameters 
-    %   of Neural Networks, thetraining data, their corresponding training 
+    """% nnObjFunction computes the value of objective function (negative log
+    %   likelihood error function with regularization) given the parameters
+    %   of Neural Networks, the training data, their corresponding training
     %   labels and lambda - regularization hyper-parameter.
 
     % Input:
@@ -107,8 +106,8 @@ def nnObjFunction(params, *args):
     %     in the vector represents the truth label of its corresponding image.
     % lambda: regularization hyper-parameter. This value is used for fixing the
     %     overfitting problem.
-       
-    % Output: 
+
+    % Output:
     % obj_val: a scalar value representing value of error function
     % obj_grad: a SINGLE vector of gradient value of error function
     % NOTE: how to compute obj_grad
@@ -118,10 +117,10 @@ def nnObjFunction(params, *args):
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % reshape 'params' vector into 2 matrices of weight w1 and w2
     % w1: matrix of weights of connections from input layer to hidden layers.
-    %     w1(i, j) represents the weight of connection from unit j in input 
+    %     w1(i, j) represents the weight of connection from unit j in input
     %     layer to unit i in hidden layer.
     % w2: matrix of weights of connections from hidden layer to output layers.
-    %     w2(i, j) represents the weight of connection from unit j in hidden 
+    %     w2(i, j) represents the weight of connection from unit j in hidden
     %     layer to unit i in output layer."""
 
     n_input, n_hidden, n_class, training_data, training_label, lambdaval = args
@@ -131,18 +130,59 @@ def nnObjFunction(params, *args):
     obj_val = 0
 
     # Your code here
-    #
-    #
-    #
-    #
-    #
+
+    n = training_data.shape[0] # num of training examples
+
+    # add bias column
+    ones_col = np.ones((n, 1))
+    train_data_with_bias = np.concatenate([ones_col, training_data], axis = 1)
 
 
+    # feedforward 
 
-    # Make sure you reshape the gradient matrices to a 1D array. for instance if your gradient matrices are grad_w1 and grad_w2
-    # you would use code similar to the one below to create a flat array
-    # obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
-    obj_grad = np.array([])
+    a = np.dot(train_data_with_bias, w1.T)  
+    z = sigmoid(a) 
+
+    #add bias to hidden layer
+    z_with_bias = np.concatenate([ones_col, z], axis = 1)
+
+    b = np.dot(z_with_bias, w2.T) 
+    out = sigmoid(b) 
+
+
+    # error function
+    # need to initialize y matrix first
+    y = np.zeros((n, n_class)) #same size matrix as b and out
+    y[np.arange(n), training_label.astype(int)] = 1 # apply truth values (true = 1) to the expected value of data 1...m
+
+    # term of error for each input data - Ji(W1, W2)
+    error_per_input = -(np.multiply(y, np.log(out)) + np.multiply(1-y, np.log(1-out))) # (7)
+
+    error_func = np.sum(error_per_input) / n # (6) average error
+
+    # backpropagation to compute gradients
+
+    output_error = out - y  # (9) error at output layer
+    
+    # error at the hidden layer
+    hidden_error = np.dot(output_error, w2[:, 1:]) * z * (1 - z)  # (12) backprop through hidden layer
+
+    # gradients for w2
+    grad_w2 = np.dot(output_error.T, z_with_bias) / n  # (16) output layer to hidden layer
+
+    # gradients for w1
+    grad_w1 = np.dot(hidden_error.T, train_data_with_bias) / n  # (10/11) hidden layer to input layer
+
+    # add regularization 
+    reg_cost = (lambdaval / (2 * n)) * (np.sum(np.square(w1[:, 1:])) + np.sum(np.square(w2[:, 1:])))
+    obj_val = error_func + reg_cost 
+
+    # add regularization gradients
+    grad_w2[:, 1:] += (lambdaval / n) * w2[:, 1:] 
+    grad_w1[:, 1:] += (lambdaval / n) * w1[:, 1:]
+
+    # flatten gradients and concatenate
+    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()))
 
     return (obj_val, obj_grad)
 
@@ -166,6 +206,19 @@ def nnPredict(w1, w2, data):
 
     labels = np.array([])
     # Your code here
+
+    data_with_bias = np.hstack((np.ones((data.shape[0], 1)), data))
+
+    input_layer_output = np.dot(data_with_bias, w1.T)   
+    input_layer_output_after_sigmoid = sigmoid(input_layer_output)  
+
+    input_with_bias = np.hstack((np.ones((input_layer_output_after_sigmoid.shape[0], 1)), input_layer_output_after_sigmoid))
+
+    hidden_layer_output = np.dot(input_with_bias, w2.T)
+    hidden_layer_output_after_sigmoid = sigmoid(hidden_layer_output)  
+
+    for arr in hidden_layer_output_after_sigmoid:
+        labels = np.append(labels, np.argmax(arr))  
 
     return labels
 
