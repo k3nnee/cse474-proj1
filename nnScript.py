@@ -248,7 +248,7 @@ if __name__ == "__main__":
     initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
 
     # set the regularization hyper-parameter
-    lambdaval = 0
+    lambdaval = 176
 
     args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
 
